@@ -196,7 +196,8 @@ send_to_alerta(char *url, char *message)
   if (res != CURLE_OK) {
     sprintf (message, "[alerta] curl_easy_perform() failed: %s", curl_easy_strerror (res));
     write_to_all_logs (message, NSLOG_RUNTIME_ERROR);
-    return res;
+    status = res;
+    goto cleanup;
   }
 
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status);
@@ -206,6 +207,8 @@ send_to_alerta(char *url, char *message)
   else if (status == 200 && debug)
     write_to_all_logs (message, NSLOG_INFO_MESSAGE);
 
+cleanup:
+  curl_slist_free_all (headers);
   curl_easy_cleanup (curl);
   return status;
 }
